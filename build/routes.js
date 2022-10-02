@@ -47,10 +47,14 @@ const models = path_1.default.resolve(__dirname, '../models');
 GifFaces_1.default.loadModels(models);
 const app = (0, express_1.default)();
 const service = ServiceContract_1.default.load(process.env.ADMIN_KEY, service_json_1.default);
-app.get('/ping', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.use(express_1.default.static(path_1.default.resolve(__dirname, '../public')));
+app.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.send('Want some memes?');
+}));
+app.get('/api/ping', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.json({ error: false, results: 'pong' });
 }));
-app.get('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.wallet)) {
         return res.json({ error: true, message: 'Wallet address missing' });
@@ -66,7 +70,7 @@ app.get('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 }));
-app.get('/user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;
     if (!((_c = req.query) === null || _c === void 0 ? void 0 : _c.wallet)) {
         return res.json({ error: true, message: 'Wallet address missing' });
@@ -76,7 +80,7 @@ app.get('/user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 }));
-app.get('/search', (req, res) => {
+app.get('/api/search', (req, res) => {
     var _a;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.q))
         return res.json({
@@ -94,7 +98,7 @@ app.get('/search', (req, res) => {
     })
         .catch(error => res.json({ error: true, message: error.message }));
 });
-app.get('/detect', (req, res) => {
+app.get('/api/detect', (req, res) => {
     var _a;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.url)) {
         return res.json({ error: true, message: 'URL missing' });
@@ -106,7 +110,7 @@ app.get('/detect', (req, res) => {
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 });
-app.get('/generate', (req, res) => {
+app.get('/api/generate', (req, res) => {
     var _a, _b;
     if (typeof ((_a = req.query) === null || _a === void 0 ? void 0 : _a.key) !== 'string') {
         return res.json({ error: true, message: 'API key missing' });
@@ -119,7 +123,7 @@ app.get('/generate', (req, res) => {
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 });
-app.get('/vote/up', (req, res) => {
+app.get('/api/vote/up', (req, res) => {
     var _a;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.url)) {
         return res.json({ error: true, message: 'URL missing' });
@@ -129,7 +133,7 @@ app.get('/vote/up', (req, res) => {
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 });
-app.get('/vote/down', (req, res) => {
+app.get('/api/vote/down', (req, res) => {
     var _a;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.url)) {
         return res.json({ error: true, message: 'URL missing' });
@@ -149,7 +153,7 @@ app.get('/vote/down', (req, res) => {
     }))
         .catch(error => res.json({ error: true, message: error.message }));
 });
-app.get('/discord/search', (req, res) => {
+app.get('/api/discord/search', (req, res) => {
     var _a, _b;
     if (!((_a = req.query) === null || _a === void 0 ? void 0 : _a.q)) {
         return res.json({ error: true, message: 'Query missing' });
