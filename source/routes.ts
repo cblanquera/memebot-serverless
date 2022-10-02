@@ -31,7 +31,14 @@ const service = ServiceContract.load(
 /**
  * Example: /ping
  */
-app.get('/ping', async (req, res) => {
+app.get('/', async (req, res) => {
+  res.send('Want some memes?');
+});
+
+/**
+ * Example: /ping
+ */
+app.get('/api/ping', async (req, res) => {
   res.json({ error: false, results: 'pong' });
 });
 
@@ -41,7 +48,7 @@ app.get('/ping', async (req, res) => {
  * &image=https://www.wearecashcows.com/images/collection/411_0.png
  * &wallet=0xbF77342243B2f6dfb7a0b37793b0ffdEeF669bb8
  */
-app.get('/register', async (req, res) => {
+app.get('/api/register', async (req, res) => {
   //if no wallet address
   if (!req.query?.wallet) {
     return res.json({ error: true, message: 'Wallet address missing' });
@@ -64,7 +71,7 @@ app.get('/register', async (req, res) => {
 /**
  * Example: /user?wallet=0xbF77342243B2f6dfb7a0b37793b0ffdEeF669bb8
  */
-app.get('/user', async (req, res) => {
+app.get('/api/user', async (req, res) => {
   //if no wallet address
   if (!req.query?.wallet) {
     return res.json({ error: true, message: 'Wallet address missing' });
@@ -80,7 +87,7 @@ app.get('/user', async (req, res) => {
 /**
  * Example: /search?q=pump&limit=10
  */
-app.get('/search', (req, res) => {
+app.get('/api/search', (req, res) => {
   if (!req.query?.q) return res.json({ 
     error: true, 
     message: 'Query missing' 
@@ -103,7 +110,7 @@ app.get('/search', (req, res) => {
  * Example: /detect
  * ?url=https://media.tenor.com/XxOtj-aoQeMAAAAC/bodybuilder-bodybuilding.gif
  */
-app.get('/detect', (req, res) => {
+app.get('/api/detect', (req, res) => {
   //if no URL was provided
   if (!req.query?.url) {
     //return error response
@@ -124,7 +131,7 @@ app.get('/detect', (req, res) => {
  * ?key=0xbF77342243B2f6dfb7a0b37793b0ffdEeF669bb8
  * &url=https://media.tenor.com/XxOtj-aoQeMAAAAC/bodybuilder-bodybuilding.gif
  */
-app.get('/generate', (req, res) => {
+app.get('/api/generate', (req, res) => {
   //if no wallet address was provided
   if (typeof req.query?.key !== 'string') {
     //return error response
@@ -146,7 +153,7 @@ app.get('/generate', (req, res) => {
  * Example: /vote/up
  * ?url=https://ccmemebot.infura-ipfs.io/ipfs/QmUzFECFujRyA52XDFTQqszppYVqTmd6kxnVvXFBBQg6GW
  */
-app.get('/vote/up', (req, res) => {
+app.get('/api/vote/up', (req, res) => {
   if (!req.query?.url) {
     return res.json({ error: true, message: 'URL missing' });
   }
@@ -162,7 +169,7 @@ app.get('/vote/up', (req, res) => {
  * Example: /vote/down
  * ?url=https://ccmemebot.infura-ipfs.io/ipfs/QmUzFECFujRyA52XDFTQqszppYVqTmd6kxnVvXFBBQg6GW
  */
-app.get('/vote/down', (req, res) => {
+app.get('/api/vote/down', (req, res) => {
   if (!req.query?.url) {
     return res.json({ error: true, message: 'URL missing' });
   }
@@ -194,7 +201,7 @@ app.get('/vote/down', (req, res) => {
  * ?q=pump
  * &key=0xbF77342243B2f6dfb7a0b37793b0ffdEeF669bb8
  */
-app.get('/discord/search', (req, res) => {
+app.get('/api/discord/search', (req, res) => {
   if (!req.query?.q) {
     return res.json({ error: true, message: 'Query missing' });
   } else if (!req.query?.key) {
