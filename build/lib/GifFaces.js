@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -38,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GifFacesUtils = void 0;
 const ipfs_only_hash_1 = __importDefault(require("ipfs-only-hash"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
-const faceapi = __importStar(require("@vladmandic/face-api"));
 const gifuct_js_1 = require("gifuct-js");
 const canvas_1 = require("../utils/canvas");
 const Exception_1 = __importDefault(require("./Exception"));
@@ -106,6 +82,16 @@ class GifFacesUtils {
             return resolve(data);
         }));
     }
+    static loadModels(path) {
+        if (this.modelsAreLoaded(path)) {
+            return new Promise(resolve => resolve(true));
+        }
+        return Promise.all([
+            canvas_1.faceapi.nets.faceRecognitionNet.loadFromDisk(path),
+            canvas_1.faceapi.nets.faceLandmark68Net.loadFromDisk(path),
+            canvas_1.faceapi.nets.ssdMobilenetv1.loadFromDisk(path)
+        ]).then(_ => (this.modelsLoaded[path] = true));
+    }
     static makeCanvasImage(width, height) {
         const canvas = (0, canvas_1.createCanvas)(width, height);
         const context = canvas.getContext('2d');
@@ -115,28 +101,18 @@ class GifFacesUtils {
     static modelsAreLoaded(path) {
         return this.modelsLoaded[path] || false;
     }
-    static loadModels(path) {
-        if (this.modelsAreLoaded(path)) {
-            return new Promise(resolve => resolve(true));
-        }
-        return Promise.all([
-            faceapi.nets.faceRecognitionNet.loadFromDisk(path),
-            faceapi.nets.faceLandmark68Net.loadFromDisk(path),
-            faceapi.nets.ssdMobilenetv1.loadFromDisk(path)
-        ]).then(_ => (this.modelsLoaded[path] = true));
-    }
     static _detectFaces(canvasImage, frame, padding = 0.4) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             this._drawPatch(canvasImage, frame);
             const image = yield this._getImage(canvasImage.canvas.toDataURL());
-            const detections = yield faceapi
+            const detections = yield canvas_1.faceapi
                 .detectAllFaces(image)
                 .withFaceLandmarks()
                 .withFaceDescriptors();
             if (!detections.length) {
                 return resolve([]);
             }
-            return resolve(faceapi.resizeResults(detections, {
+            return resolve(canvas_1.faceapi.resizeResults(detections, {
                 width: image.width,
                 height: image.height
             }).map(face => this._makeOuterBox(face.detection.box, padding)));
@@ -149,7 +125,7 @@ class GifFacesUtils {
     }
     static _getImage(src) {
         return new Promise((resolve, reject) => {
-            const image = faceapi.env.getEnv().createImageElement();
+            const image = canvas_1.faceapi.env.getEnv().createImageElement();
             image.onload = () => resolve(image);
             image.onerror = error => reject(error);
             image.src = src;

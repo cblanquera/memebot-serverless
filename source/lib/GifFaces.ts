@@ -2,14 +2,12 @@
 import CID from 'ipfs-only-hash';
 //used to fetch remote gifs
 import fetch from 'node-fetch';
-//the face detection library (latest updated with tensorflow)
-import * as faceapi from '@vladmandic/face-api';
 //split animated gifs into franes
 import { parseGIF, decompressFrames } from 'gifuct-js';
 //centralized type defs
 import type { Box, Frame } from '../utils/types';
 //canvas node polyfills
-import { Canvas, CanvasImage, createCanvas } from '../utils/canvas';
+import { Canvas, CanvasImage, createCanvas, faceapi } from '../utils/canvas';
 //expressive error reporting pattern
 import Exception from './Exception';
 
@@ -137,6 +135,21 @@ export class GifFacesUtils {
   }
 
   /**
+   * Loads all face detection models found in a given path
+   */
+  public static loadModels(path: string): Promise<boolean> {
+    //if models are already loaded
+    if (this.modelsAreLoaded(path)) {
+      return new Promise(resolve => resolve(true));
+    }
+    return Promise.all([
+      faceapi.nets.faceRecognitionNet.loadFromDisk(path),
+      faceapi.nets.faceLandmark68Net.loadFromDisk(path),
+      faceapi.nets.ssdMobilenetv1.loadFromDisk(path)
+    ]).then(_ => (this.modelsLoaded[path] = true));
+  }
+
+  /**
    * Makes a new Canvas and returns the context and the image
    */
   public static makeCanvasImage(
@@ -155,21 +168,6 @@ export class GifFacesUtils {
    */
   public static modelsAreLoaded(path: string) {
     return this.modelsLoaded[path] || false;
-  }
-
-  /**
-   * Loads all face detection models found in a given path
-   */
-  public static loadModels(path: string): Promise<boolean> {
-    //if models are already loaded
-    if (this.modelsAreLoaded(path)) {
-      return new Promise(resolve => resolve(true));
-    }
-    return Promise.all([
-      faceapi.nets.faceRecognitionNet.loadFromDisk(path),
-      faceapi.nets.faceLandmark68Net.loadFromDisk(path),
-      faceapi.nets.ssdMobilenetv1.loadFromDisk(path)
-    ]).then(_ => (this.modelsLoaded[path] = true));
   }
 
   /* Private Static Methods

@@ -14,10 +14,11 @@ import MemeGenerator from './lib/MemeGenerator';
 import Consumer from './lib/Consumer';
 
 import { SearchResponse, Direction } from './utils/types';
+import { loadTF } from './utils/canvas';
 
 //gif faces setup
 const models = path.resolve(__dirname, '../models');
-GifFaces.loadModels(models);
+loadTF().then(_ => GifFaces.loadModels(models));
 //express setup
 const app = express();
 //service contract setup

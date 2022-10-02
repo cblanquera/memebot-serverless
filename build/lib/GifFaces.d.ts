@@ -10,9 +10,9 @@ export declare class GifFacesUtils {
     static getCID(buffer: Buffer | string): Promise<string>;
     static getGifFrames(buffer: Buffer): import("gifuct-js").ParsedFrame[];
     static detectGifFaces(frames: Frame[], padding?: number): Promise<Box[][]>;
+    static loadModels(path: string): Promise<boolean>;
     static makeCanvasImage(width: number, height: number): CanvasImage;
     static modelsAreLoaded(path: string): boolean;
-    static loadModels(path: string): Promise<boolean>;
     private static _detectFaces;
     private static _drawPatch;
     private static _getImage;

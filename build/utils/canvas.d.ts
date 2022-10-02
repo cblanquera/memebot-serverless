@@ -1,4 +1,5 @@
-import '@tensorflow/tfjs-node';
+import * as faceapi from '@vladmandic/face-api/dist/face-api.node-wasm';
 import { Canvas, CanvasImage, CanvasContext, Image, ImageData } from './types';
 import { createCanvas, loadImage } from 'canvas';
-export { Canvas, CanvasImage, CanvasContext, Image, ImageData, createCanvas, loadImage };
+declare const loadTF: () => Promise<void>;
+export { Canvas, CanvasImage, CanvasContext, Image, ImageData, faceapi, createCanvas, loadImage, loadTF };
