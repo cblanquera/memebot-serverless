@@ -1,10 +1,10 @@
 //for the .env file
-//import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 //get the express app
 import app from './routes';
 
 //dot env setup
-//dotenv.config();
+dotenv.config();
 //port setup
 const port = 3000;
 //now http listen on port
