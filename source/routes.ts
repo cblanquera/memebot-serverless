@@ -28,6 +28,8 @@ const service = ServiceContract.load(
 
 //declare some routes
 
+app.use(express.static(path.resolve(__dirname, '../public')));
+
 /**
  * Example: /ping
  */
