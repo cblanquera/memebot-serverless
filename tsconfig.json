@@ -21,6 +21,7 @@
     "models",
     "migrations",
     "node_modules",
-    "public"
+    "public",
+    "scripts"
   ]
 }

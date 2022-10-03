@@ -116,44 +116,32 @@ class MemeGenerator {
             });
         });
     }
-    static generateOne(consumer, query, service, limit = 10) {
-        var _a, _b;
+    static generateOne(consumer, query, service, skip = 0) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof consumer === 'string') {
                 consumer = yield Consumer_1.default.getOrThrow(consumer);
             }
-            query.limit = query.limit || limit;
-            const search = yield this.search(query, true);
-            const sources = yield Source_1.default.findAll(search.request);
-            for (const source of sources) {
-                if (source.data) {
-                    continue;
-                }
-                const sourceWithFaces = yield this.detect(source);
-                try {
-                    return yield this.generate(consumer, sourceWithFaces, service);
-                }
-                catch (e) {
-                }
-            }
-            const response = search.response;
-            if (!((_a = response.results) === null || _a === void 0 ? void 0 : _a.length)
-                || !((_b = response.next) === null || _b === void 0 ? void 0 : _b.length)
-                || query.next == response.next) {
+            const source = yield Source_1.default.findOneWithData(query, skip);
+            if (!source) {
                 return null;
             }
-            query.next = response.next;
-            return yield this.generateOne(consumer, query, service);
+            try {
+                return yield this.generate(consumer, source, service);
+            }
+            catch (e) {
+            }
+            return yield this.generateOne(consumer, query, service, skip + 1);
         });
     }
     static search(query, wait = false) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const search = new URLSearchParams(Object.assign(Object.assign({ limit: '10' }, query), {
+            const search = new URLSearchParams(Object.assign(Object.assign({ limit: '100' }, query), {
                 client_key: 'tenorcept',
                 key: TENOR_KEY
             }));
             const url = `https://tenor.googleapis.com/v2/search?${search.toString()}`;
+            console.log(url);
             const results = yield prisma_1.prisma.search.findUnique({
                 where: { request: url }
             });

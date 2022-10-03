@@ -137,10 +137,40 @@ export default class Source {
   }
 
   /**
+   * Returns the first row that matches the query
+   */
+  public static async findOneWithData(query: string, skip: number = 0) {
+    return await prisma.source.findFirst({ 
+      where: { 
+        data: { not: Prisma.JsonNull },
+        OR: [
+          { description: { contains: query } },
+          { tags: { array_contains: [ query ] } }
+        ]
+      },
+      skip
+    });
+  }
+
+  /**
    * Returns all the results that match the given source url
    */
-  public static async findAll(source: string) {
+  public static async findAllWithSource(source: string) {
     return await prisma.source.findMany({ where: { source } });
+  }
+
+  /**
+   * Returns all the results that match the given source url
+   */
+  public static async findAllWithNoData(
+    skip: number = 0, 
+    take: number = 100
+  ) {
+    return await prisma.source.findMany({ 
+      where: { cid: null },
+      skip, 
+      take
+    });
   }
 
   /**

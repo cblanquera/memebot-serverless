@@ -174,59 +174,36 @@ export default class MemeGenerator {
    */
   public static async generateOne(
     consumer: string|Consumer, 
-    query: ObjectAny,
+    query: string,
     service: ServiceContract,
-    limit: number = 10
+    skip: number = 0
   ): Promise<Meme|null> {
     //get the consumer
     if (typeof consumer === 'string') {
       consumer = await ConsumerModel.getOrThrow(consumer);
     }
-    //make sure a limit is set
-    query.limit = query.limit || limit;
   
-    const search = await this.search(query, true);
     //find sources that match this query
-    const sources = await SourceModel.findAll(search.request);
-
-    //loop through all the sources and look for one without data
-    for (const source of sources) {
-      if (source.data) {
-        continue
-      }
-  
-      //found one without data
-  
-      //detect faces
-      const sourceWithFaces = await this.detect(source);
-
-      try {//to generate meme
-        return await this.generate(
-          consumer, 
-          sourceWithFaces, 
-          service
-        );
-      } catch(e) {
-        //it could fail if
-        // - No faces were detected
-        // - Frames length does not match source data length
-      }
-    }
-    //did not find any with data
-
-    //queue the next one
-    const response = search.response as SearchResponse; 
-
-    //if no results or no more next or next is the same
-    if (!response.results?.length 
-      || !response.next?.length
-      || query.next == response.next
-    ) {
+    const source = await SourceModel.findOneWithData(query, skip);
+    //if no source found
+    if (!source) {
+      //means nothing else is available
       return null;
     }
 
-    query.next = response.next;
-    return await this.generateOne(consumer, query, service);
+    try {//to generate meme
+      return await this.generate(
+        consumer, 
+        source, 
+        service
+      );
+    } catch(e) {
+      //it could fail if
+      // - No faces were detected
+      // - Frames length does not match source data length
+    }
+
+    return await this.generateOne(consumer, query, service, skip + 1);
   }
 
   /**
@@ -235,7 +212,7 @@ export default class MemeGenerator {
   public static async search(query: ObjectAny, wait = false) {
     //get query
     const search = new URLSearchParams({
-      ...{ limit: '10' }, 
+      ...{ limit: '100' }, 
       ...query, 
       ...{
         client_key: 'tenorcept',
@@ -243,6 +220,8 @@ export default class MemeGenerator {
       }
     });
     const url = `https://tenor.googleapis.com/v2/search?${search.toString()}`;
+
+    console.log(url)
 
     //get the results
     const results = await prisma.search.findUnique({ 

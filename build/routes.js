@@ -162,8 +162,10 @@ app.get('/api/discord/search', (req, res) => {
     else if (!((_b = req.query) === null || _b === void 0 ? void 0 : _b.key)) {
         return res.json({ error: true, message: 'API Key missing' });
     }
+    const query = req.query.q;
     const walletAddress = req.query.key;
-    MemeGenerator_1.default.generateOne(walletAddress, req.query, service)
+    const skip = parseInt(req.query.skip || '0') || 0;
+    MemeGenerator_1.default.generateOne(walletAddress, query, service, skip)
         .then(results => res.json({ error: false, results }))
         .catch(error => res.json({ error: true, message: error.message }));
 });

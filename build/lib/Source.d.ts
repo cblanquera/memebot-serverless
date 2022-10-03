@@ -7,6 +7,8 @@ export default class Source {
     static get(id: number | string): Promise<SourceType | null>;
     static getOrThrow(id: number | string): Promise<SourceType>;
     static makeFromCID(url: string, cid: string): Promise<SourceType>;
-    static findAll(source: string): Promise<SourceType[]>;
+    static findOneWithData(query: string, skip?: number): Promise<SourceType | null>;
+    static findAllWithSource(source: string): Promise<SourceType[]>;
+    static findAllWithNoData(skip?: number, take?: number): Promise<SourceType[]>;
     static vote(source: number | string | SourceType, direction: Direction): Promise<SourceType>;
 }

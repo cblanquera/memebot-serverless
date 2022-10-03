@@ -108,9 +108,32 @@ class Source {
             });
         });
     }
-    static findAll(source) {
+    static findOneWithData(query, skip = 0) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield prisma_1.prisma.source.findFirst({
+                where: {
+                    data: { not: prisma_1.Prisma.JsonNull },
+                    OR: [
+                        { description: { contains: query } },
+                        { tags: { array_contains: [query] } }
+                    ]
+                },
+                skip
+            });
+        });
+    }
+    static findAllWithSource(source) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield prisma_1.prisma.source.findMany({ where: { source } });
+        });
+    }
+    static findAllWithNoData(skip = 0, take = 100) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield prisma_1.prisma.source.findMany({
+                where: { cid: null },
+                skip,
+                take
+            });
         });
     }
     static vote(source, direction) {
