@@ -33,9 +33,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadTF = exports.loadImage = exports.createCanvas = exports.faceapi = exports.ImageData = exports.Image = exports.Canvas = void 0;
-const tf = __importStar(require("@tensorflow/tfjs"));
-const faceapi = __importStar(require("@vladmandic/face-api/dist/face-api.node-wasm"));
+require("@tensorflow/tfjs-node");
+const faceapi = __importStar(require("@vladmandic/face-api"));
 exports.faceapi = faceapi;
+const loadTF = () => __awaiter(void 0, void 0, void 0, function* () { });
+exports.loadTF = loadTF;
 const types_1 = require("./types");
 Object.defineProperty(exports, "Canvas", { enumerable: true, get: function () { return types_1.Canvas; } });
 Object.defineProperty(exports, "Image", { enumerable: true, get: function () { return types_1.Image; } });
@@ -44,7 +46,3 @@ const canvas_1 = require("canvas");
 Object.defineProperty(exports, "createCanvas", { enumerable: true, get: function () { return canvas_1.createCanvas; } });
 Object.defineProperty(exports, "loadImage", { enumerable: true, get: function () { return canvas_1.loadImage; } });
 faceapi.env.monkeyPatch({ Canvas: types_1.Canvas, Image: types_1.Image, ImageData: types_1.ImageData });
-const loadTF = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield tf.ready();
-});
-exports.loadTF = loadTF;
