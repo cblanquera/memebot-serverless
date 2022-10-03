@@ -6,10 +6,10 @@ export declare class GifFacesUtils {
     static bufferIsGif(buffer: Buffer): boolean;
     static copyCanvas(source: Canvas, destination: Canvas): Canvas;
     static cloneCanvas(source: Canvas): Canvas;
+    static detectGifFaces(frames: Frame[], padding?: number): Promise<Box[][]>;
     static getBuffer(url: string): Promise<Buffer>;
     static getCID(buffer: Buffer | string): Promise<string>;
     static getGifFrames(buffer: Buffer): import("gifuct-js").ParsedFrame[];
-    static detectGifFaces(frames: Frame[], padding?: number): Promise<Box[][]>;
     static loadModels(path: string): Promise<boolean>;
     static makeCanvasImage(width: number, height: number): CanvasImage;
     static modelsAreLoaded(path: string): boolean;

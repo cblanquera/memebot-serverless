@@ -145,9 +145,9 @@ export default class MemeGenerator {
     }
 
     //start generating
-    const animation = await this._generate(consumer, source);
-    const animationBuffer = animation.out.getData();
-    const animationCID = await this._upload(animationBuffer);
+    const cid = await this._upload(
+      await this._generate(consumer, source)
+    );
 
     //now consume it
     await ConsumerModel.consume(consumer.walletAddress, BigNumber
@@ -159,8 +159,8 @@ export default class MemeGenerator {
     return await prisma.meme.create({ 
       data: {
         description: source.description,
-        url: `${service.config.ipfs}/ipfs/${animationCID}`,
-        cid: animationCID,
+        url: `${service.config.ipfs}/ipfs/${cid}`,
+        cid: cid,
         tags: (source.tags as string[]) || [],
         sourceId: source.id,
         consumerId: consumer.id
@@ -336,16 +336,8 @@ export default class MemeGenerator {
   /**
    * Returns an Image given an index and a list of image urls
    */
-  private static _chooseImage(
-    images: string[], 
-    index: number
-  ): Promise<Image> {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = e => reject(e);
-      image.src = images[index % images.length];
-    })
+  private static _chooseImage(images: Image[], index: number) {
+    return images[index % images.length]
   }
 
   /**
@@ -391,7 +383,7 @@ export default class MemeGenerator {
       throw Exception.for('No faces were detected');
     }
   
-    const consumerImages = consumer.images as string[];
+    const consumerImages = await this._makeImages(consumer.images as string[]);
     const buffer = await GifFaces.getBuffer(source.url);
     const frames = GifFaces.getGifFrames(buffer);
 
@@ -425,13 +417,38 @@ export default class MemeGenerator {
   }
 
   /**
-   * Uploads a file to Infura IPFS
+   * Converts a list of srcs to a list of Image objects
    */
-  private static _upload(buffer: Buffer): Promise<string> {
+  private static async _makeImages(srcs: string[]): Promise<Image[]> {
+    const images: Image[] = [];
+
+    for (const src of srcs) {
+      images.push(await this._makeImage(src));
+    }
+
+    return images;
+  }
+  
+  /**
+   * Converts a url src to an image object
+   */
+  private static _makeImage(src: string): Promise<Image> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = e => reject(e);
+      image.src = src;
+    })
+  }
+
+  /**
+   * Uploads animation to Infura IPFS
+   */
+  private static _upload(animation: GIFEncoder): Promise<string> {
     return new Promise((resolve, reject) => {
       //make a form
       const form = new FormData();
-      form.append('file', Readable.from(buffer));
+      form.append('file', Readable.from(animation.out.getData()));
       //upload animation to CDN/IPFS
       fetch(`https://ipfs.infura.io:5001/api/v0/add`, {
         method: 'POST',

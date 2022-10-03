@@ -18,5 +18,7 @@ export default class MemeGenerator {
     private static _drawFrame;
     private static _fetchJSON;
     private static _generate;
+    private static _makeImages;
+    private static _makeImage;
     private static _upload;
 }

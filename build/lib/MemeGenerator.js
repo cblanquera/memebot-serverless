@@ -97,9 +97,7 @@ class MemeGenerator {
             if (!(yield this._canConsume(consumer, totalBalance, service.rate))) {
                 throw Exception_1.default.for('Not enough balance');
             }
-            const animation = yield this._generate(consumer, source);
-            const animationBuffer = animation.out.getData();
-            const animationCID = yield this._upload(animationBuffer);
+            const cid = yield this._upload(yield this._generate(consumer, source));
             yield Consumer_1.default.consume(consumer.walletAddress, ServiceContract_1.BigNumber
                 .from(consumer.consumed)
                 .add(service.rate)
@@ -107,8 +105,8 @@ class MemeGenerator {
             return yield prisma_1.prisma.meme.create({
                 data: {
                     description: source.description,
-                    url: `${service.config.ipfs}/ipfs/${animationCID}`,
-                    cid: animationCID,
+                    url: `${service.config.ipfs}/ipfs/${cid}`,
+                    cid: cid,
                     tags: source.tags || [],
                     sourceId: source.id,
                     consumerId: consumer.id
@@ -217,12 +215,7 @@ class MemeGenerator {
         });
     }
     static _chooseImage(images, index) {
-        return new Promise((resolve, reject) => {
-            const image = new canvas_1.Image();
-            image.onload = () => resolve(image);
-            image.onerror = e => reject(e);
-            image.src = images[index % images.length];
-        });
+        return images[index % images.length];
     }
     static _drawFace(canvasImage, image, face) {
         const { width: iWidth, height: iHeight } = image;
@@ -245,7 +238,7 @@ class MemeGenerator {
             if (!Array.isArray(source.data) || !source.data.length) {
                 throw Exception_1.default.for('No faces were detected');
             }
-            const consumerImages = consumer.images;
+            const consumerImages = yield this._makeImages(consumer.images);
             const buffer = yield GifFaces_1.default.getBuffer(source.url);
             const frames = GifFaces_1.default.getGifFrames(buffer);
             if (frames.length !== source.data.length) {
@@ -270,10 +263,27 @@ class MemeGenerator {
             return animation;
         });
     }
-    static _upload(buffer) {
+    static _makeImages(srcs) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const images = [];
+            for (const src of srcs) {
+                images.push(yield this._makeImage(src));
+            }
+            return images;
+        });
+    }
+    static _makeImage(src) {
+        return new Promise((resolve, reject) => {
+            const image = new canvas_1.Image();
+            image.onload = () => resolve(image);
+            image.onerror = e => reject(e);
+            image.src = src;
+        });
+    }
+    static _upload(animation) {
         return new Promise((resolve, reject) => {
             const form = new form_data_1.default();
-            form.append('file', stream_1.Readable.from(buffer));
+            form.append('file', stream_1.Readable.from(animation.out.getData()));
             (0, node_fetch_1.default)(`https://ipfs.infura.io:5001/api/v0/add`, {
                 method: 'POST',
                 headers: Object.assign(Object.assign({}, form.getHeaders()), { authorization: `Basic ${Buffer

@@ -51,41 +51,6 @@ export class GifFacesUtils {
   }
 
   /**
-   * Returns the buffered content of a url source
-   */
-  public static getBuffer(url: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      fetch(url)
-        .then(async response => response.arrayBuffer())
-        .then(buffer => Buffer.from(buffer))
-        .then(buffer => {
-          //if the buffer is not a gif
-          if (this.bufferIsGif(buffer)) {
-            reject(Exception.for('URL is not a gif'));
-          } else {
-            resolve(buffer);
-          }
-        })
-    });
-  }
-
-  /**
-   * Returns the CID of a buffer
-   */
-  public static getCID(buffer: Buffer|string): Promise<string> {
-    return CID.of(buffer);
-  }
-
-  /**
-   * Returns all the frame image data of a buffer (should be a gif)
-   */
-  public static getGifFrames(buffer: Buffer) {
-    const gif = parseGIF(buffer);
-    //get gif frames
-    return decompressFrames(gif, true);
-  }
-
-  /**
    * Returns all the face coordanates found in the given frames
    */
   public static detectGifFaces(
@@ -132,6 +97,39 @@ export class GifFacesUtils {
     
       return resolve(data);
     });
+  }
+
+  /**
+   * Returns the buffered content of a url source
+   */
+  public static getBuffer(url: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(async response => response.arrayBuffer())
+        .then(buffer => Buffer.from(buffer))
+        .then(buffer => {
+          //if the buffer is not a gif
+          if (this.bufferIsGif(buffer)) {
+            reject(Exception.for('URL is not a gif'));
+          } else {
+            resolve(buffer);
+          }
+        })
+    });
+  }
+
+  /**
+   * Returns the CID of a buffer
+   */
+  public static getCID(buffer: Buffer|string): Promise<string> {
+    return CID.of(buffer);
+  }
+
+  /**
+   * Returns all the frame image data of a buffer (should be a gif)
+   */
+  public static getGifFrames(buffer: Buffer) {
+    return decompressFrames(parseGIF(buffer), true);
   }
 
   /**

@@ -33,28 +33,6 @@ class GifFacesUtils {
         canvas.getContext('2d').drawImage(source, 0, 0);
         return canvas;
     }
-    static getBuffer(url) {
-        return new Promise((resolve, reject) => {
-            (0, node_fetch_1.default)(url)
-                .then((response) => __awaiter(this, void 0, void 0, function* () { return response.arrayBuffer(); }))
-                .then(buffer => Buffer.from(buffer))
-                .then(buffer => {
-                if (this.bufferIsGif(buffer)) {
-                    reject(Exception_1.default.for('URL is not a gif'));
-                }
-                else {
-                    resolve(buffer);
-                }
-            });
-        });
-    }
-    static getCID(buffer) {
-        return ipfs_only_hash_1.default.of(buffer);
-    }
-    static getGifFrames(buffer) {
-        const gif = (0, gifuct_js_1.parseGIF)(buffer);
-        return (0, gifuct_js_1.decompressFrames)(gif, true);
-    }
     static detectGifFaces(frames, padding = 0.4) {
         return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
             if (!frames.length) {
@@ -81,6 +59,27 @@ class GifFacesUtils {
             data.forEach(faces => faces ? faces : firstFaces);
             return resolve(data);
         }));
+    }
+    static getBuffer(url) {
+        return new Promise((resolve, reject) => {
+            (0, node_fetch_1.default)(url)
+                .then((response) => __awaiter(this, void 0, void 0, function* () { return response.arrayBuffer(); }))
+                .then(buffer => Buffer.from(buffer))
+                .then(buffer => {
+                if (this.bufferIsGif(buffer)) {
+                    reject(Exception_1.default.for('URL is not a gif'));
+                }
+                else {
+                    resolve(buffer);
+                }
+            });
+        });
+    }
+    static getCID(buffer) {
+        return ipfs_only_hash_1.default.of(buffer);
+    }
+    static getGifFrames(buffer) {
+        return (0, gifuct_js_1.decompressFrames)((0, gifuct_js_1.parseGIF)(buffer), true);
     }
     static loadModels(path) {
         if (this.modelsAreLoaded(path)) {
