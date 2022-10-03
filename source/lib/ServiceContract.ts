@@ -181,7 +181,7 @@ export default class ServiceContract extends ContractAdmin {
   /**
    * Service contract factory loader
    */
-  public static load(wallet:string|ethers.Wallet, config: ObjectAny) {
+  public static load(wallet: string|ethers.Wallet, config: ObjectAny) {
     const { rpc, address, abi, bytecode } = config;
     //determine the extra config
     const extras = Object.assign({}, config);
@@ -197,7 +197,9 @@ export default class ServiceContract extends ContractAdmin {
       extras
     );
     serviceContract.provider = rpc;
-    serviceContract.admin = wallet;
+    if (wallet) {
+      serviceContract.admin = wallet;
+    }
     return serviceContract;
   }
 

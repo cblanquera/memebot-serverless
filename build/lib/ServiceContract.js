@@ -90,7 +90,9 @@ class ServiceContract extends ContractAdmin {
         delete extras.bytecode;
         const serviceContract = new ServiceContract(address, abi, bytecode, extras);
         serviceContract.provider = rpc;
-        serviceContract.admin = wallet;
+        if (wallet) {
+            serviceContract.admin = wallet;
+        }
         return serviceContract;
     }
     balanceOf(owner) {
