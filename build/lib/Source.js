@@ -108,9 +108,9 @@ class Source {
             });
         });
     }
-    static findOneWithData(query, skip = 0) {
+    static findManyWithData(query, skip = 0, take = 25) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield prisma_1.prisma.source.findFirst({
+            return yield prisma_1.prisma.source.findMany({
                 where: {
                     data: { not: prisma_1.Prisma.JsonNull },
                     OR: [
@@ -118,22 +118,23 @@ class Source {
                         { tags: { array_contains: [query] } }
                     ]
                 },
-                skip
+                skip,
+                take
             });
         });
     }
-    static findAllWithSource(source) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield prisma_1.prisma.source.findMany({ where: { source } });
-        });
-    }
-    static findAllWithNoData(skip = 0, take = 100) {
+    static findManyWithNoData(skip = 0, take = 100) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield prisma_1.prisma.source.findMany({
                 where: { cid: null },
                 skip,
                 take
             });
+        });
+    }
+    static findManyWithSource(source) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield prisma_1.prisma.source.findMany({ where: { source } });
         });
     }
     static vote(source, direction) {

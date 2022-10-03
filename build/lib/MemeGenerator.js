@@ -114,32 +114,36 @@ class MemeGenerator {
             });
         });
     }
-    static generateOne(consumer, query, service, skip = 0) {
+    static generateOne(consumer, query, service, skip = 0, range = 1) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof consumer === 'string') {
                 consumer = yield Consumer_1.default.getOrThrow(consumer);
             }
-            const source = yield Source_1.default.findOneWithData(query, skip);
-            if (!source) {
+            const sources = yield Source_1.default.findManyWithData(query, skip, range);
+            if (!sources.length) {
                 return null;
             }
-            try {
-                return yield this.generate(consumer, source, service);
+            for (const source of sources) {
+                if (!Array.isArray(source.data) || !source.data.length) {
+                    continue;
+                }
+                try {
+                    return yield this.generate(consumer, source, service);
+                }
+                catch (e) {
+                }
             }
-            catch (e) {
-            }
-            return yield this.generateOne(consumer, query, service, skip + 1);
+            return yield this.generateOne(consumer, query, service, skip + range, range);
         });
     }
     static search(query, wait = false) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const search = new URLSearchParams(Object.assign(Object.assign({ limit: '100' }, query), {
+            const search = new URLSearchParams(Object.assign(Object.assign({ limit: '50' }, query), {
                 client_key: 'tenorcept',
                 key: TENOR_KEY
             }));
             const url = `https://tenor.googleapis.com/v2/search?${search.toString()}`;
-            console.log(url);
             const results = yield prisma_1.prisma.search.findUnique({
                 where: { request: url }
             });
@@ -238,7 +242,7 @@ class MemeGenerator {
             if (!Array.isArray(source.data) || !source.data.length) {
                 throw Exception_1.default.for('No faces were detected');
             }
-            const consumerImages = yield this._makeImages(consumer.images);
+            const face = yield this._makeImage(this._chooseImage(consumer.images, Math.floor(Math.random() * 1000)));
             const buffer = yield GifFaces_1.default.getBuffer(source.url);
             const frames = GifFaces_1.default.getGifFrames(buffer);
             if (frames.length !== source.data.length) {
@@ -253,7 +257,6 @@ class MemeGenerator {
                 this._drawFrame(canvasImage, frame);
                 const faces = source.data[i];
                 for (let j = 0; j < faces.length; j++) {
-                    const face = yield this._chooseImage(consumerImages, j);
                     this._drawFace(canvasImage, face, faces[j]);
                 }
                 animation.setDelay(frame.delay || 0);
@@ -261,15 +264,6 @@ class MemeGenerator {
             }
             animation.finish();
             return animation;
-        });
-    }
-    static _makeImages(srcs) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const images = [];
-            for (const src of srcs) {
-                images.push(yield this._makeImage(src));
-            }
-            return images;
         });
     }
     static _makeImage(src) {

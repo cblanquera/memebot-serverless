@@ -139,8 +139,12 @@ export default class Source {
   /**
    * Returns the first row that matches the query
    */
-  public static async findOneWithData(query: string, skip: number = 0) {
-    return await prisma.source.findFirst({ 
+  public static async findManyWithData(
+    query: string, 
+    skip: number = 0,
+    take: number = 25
+  ) {
+    return await prisma.source.findMany({ 
       where: { 
         data: { not: Prisma.JsonNull },
         OR: [
@@ -148,21 +152,15 @@ export default class Source {
           { tags: { array_contains: [ query ] } }
         ]
       },
-      skip
+      skip,
+      take
     });
   }
 
   /**
    * Returns all the results that match the given source url
    */
-  public static async findAllWithSource(source: string) {
-    return await prisma.source.findMany({ where: { source } });
-  }
-
-  /**
-   * Returns all the results that match the given source url
-   */
-  public static async findAllWithNoData(
+  public static async findManyWithNoData(
     skip: number = 0, 
     take: number = 100
   ) {
@@ -171,6 +169,13 @@ export default class Source {
       skip, 
       take
     });
+  }
+
+  /**
+   * Returns all the results that match the given source url
+   */
+  public static async findManyWithSource(source: string) {
+    return await prisma.source.findMany({ where: { source } });
   }
 
   /**

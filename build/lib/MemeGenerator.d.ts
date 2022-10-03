@@ -6,7 +6,7 @@ export default class MemeGenerator {
     static get(id: number | string): Promise<Meme | null>;
     static getOrThrow(id: number | string): Promise<Meme>;
     static generate(consumer: string | Consumer, source: string | Source, service: ServiceContract): Promise<Meme>;
-    static generateOne(consumer: string | Consumer, query: string, service: ServiceContract, skip?: number): Promise<Meme | null>;
+    static generateOne(consumer: string | Consumer, query: string, service: ServiceContract, skip?: number, range?: number): Promise<Meme | null>;
     static search(query: ObjectAny, wait?: boolean): Promise<import(".prisma/client").Search | {
         request: string;
         response: SearchResponse;
@@ -18,7 +18,6 @@ export default class MemeGenerator {
     private static _drawFrame;
     private static _fetchJSON;
     private static _generate;
-    private static _makeImages;
     private static _makeImage;
     private static _upload;
 }

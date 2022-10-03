@@ -22,7 +22,7 @@ async function main() {
 
   while (true) {
     //get sources
-    const sources = await Source.findAllWithNoData(start, range)
+    const sources = await Source.findManyWithNoData(start, range)
     //if no sources, done
     if (!sources.length) break
     //detect faces for each source

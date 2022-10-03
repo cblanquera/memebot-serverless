@@ -176,7 +176,8 @@ export default class MemeGenerator {
     consumer: string|Consumer, 
     query: string,
     service: ServiceContract,
-    skip: number = 0
+    skip: number = 0,
+    range: number = 1
   ): Promise<Meme|null> {
     //get the consumer
     if (typeof consumer === 'string') {
@@ -184,26 +185,33 @@ export default class MemeGenerator {
     }
   
     //find sources that match this query
-    const source = await SourceModel.findOneWithData(query, skip);
+    const sources = await SourceModel.findManyWithData(query, skip, range);
     //if no source found
-    if (!source) {
+    if (!sources.length) {
       //means nothing else is available
       return null;
     }
 
-    try {//to generate meme
-      return await this.generate(
-        consumer, 
-        source, 
-        service
-      );
-    } catch(e) {
-      //it could fail if
-      // - No faces were detected
-      // - Frames length does not match source data length
+    for (const source of sources) {
+      //it no data
+      if (!Array.isArray(source.data) || !source.data.length) {
+        //skip
+        continue;
+      }
+      try {//to generate meme
+        return await this.generate(
+          consumer, 
+          source, 
+          service
+        );
+      } catch(e) {
+        //it could fail if
+        // - No faces were detected
+        // - Frames length does not match source data length
+      }
     }
 
-    return await this.generateOne(consumer, query, service, skip + 1);
+    return await this.generateOne(consumer, query, service, skip + range, range);
   }
 
   /**
@@ -212,7 +220,7 @@ export default class MemeGenerator {
   public static async search(query: ObjectAny, wait = false) {
     //get query
     const search = new URLSearchParams({
-      ...{ limit: '100' }, 
+      ...{ limit: '50' }, 
       ...query, 
       ...{
         client_key: 'tenorcept',
@@ -220,8 +228,6 @@ export default class MemeGenerator {
       }
     });
     const url = `https://tenor.googleapis.com/v2/search?${search.toString()}`;
-
-    console.log(url)
 
     //get the results
     const results = await prisma.search.findUnique({ 
@@ -336,7 +342,7 @@ export default class MemeGenerator {
   /**
    * Returns an Image given an index and a list of image urls
    */
-  private static _chooseImage(images: Image[], index: number) {
+  private static _chooseImage(images: any[], index: number) {
     return images[index % images.length]
   }
 
@@ -383,7 +389,13 @@ export default class MemeGenerator {
       throw Exception.for('No faces were detected');
     }
   
-    const consumerImages = await this._makeImages(consumer.images as string[]);
+    //choose a random face
+    const face = await this._makeImage(
+      this._chooseImage(
+        consumer.images as string[], 
+        Math.floor(Math.random() * 1000)
+      )
+    );
     const buffer = await GifFaces.getBuffer(source.url);
     const frames = GifFaces.getGifFrames(buffer);
 
@@ -401,8 +413,6 @@ export default class MemeGenerator {
       this._drawFrame(canvasImage, frame);
       const faces = source.data[i] as Box[];
       for (let j = 0; j < faces.length; j++) {
-        //pick a face
-        const face = await this._chooseImage(consumerImages, j);
         //draw the face
         this._drawFace(canvasImage, face, faces[j]);
       }
@@ -414,19 +424,6 @@ export default class MemeGenerator {
     animation.finish();
 
     return animation;
-  }
-
-  /**
-   * Converts a list of srcs to a list of Image objects
-   */
-  private static async _makeImages(srcs: string[]): Promise<Image[]> {
-    const images: Image[] = [];
-
-    for (const src of srcs) {
-      images.push(await this._makeImage(src));
-    }
-
-    return images;
   }
   
   /**
